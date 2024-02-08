@@ -1,27 +1,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { DxTextBox, DxButton } from 'devextreme-vue'
-import { DxValidator, DxRequiredRule, DxCustomRule } from 'devextreme-vue/validator'
-import { wb_img_url } from '../useImages'
+import ThePreview from './ThePreview.vue'
+import TheSearch from './TheSearch.vue'
+import { DxButton } from 'devextreme-vue'
+
 import JSZip from 'jszip'
 import FileSaver from 'file-saver'
 
 // https://www.wildberries.ru/catalog/76091735/detail.aspx
-const inputValue = ref('')
-const placeholder = 'https://www.wildberries.ru/catalog/76091735/detail.aspx'
+
 const images = ref<string[]>([])
 const imagesBlob = ref<Blob[]>([])
 
-function getValue(): void {
-  const id: string = inputValue.value.replace(/[\D]/g, '')
-  const url: string = `https:${wb_img_url(id)}/images/big/`
 
-  getImages(url)
-}
-
-function validateLink({ value }: { value: string }): boolean {
-  return /https:\/\/www.wildberries.ru\/catalog\/\d*\/detail.aspx/.test(value)
-}
 
 async function getImages(url: string): Promise<void> {
   let end = false
@@ -63,7 +54,7 @@ function zip() {
   const zip = new JSZip()
 
   imagesBlob.value.forEach((img, i) => {
-    zip.file(`${i}.webp`, img, { base64: true })
+    zip.file(`${i}.jpg`, img, { base64: true })
   })
 
   zip.generateAsync({ type: 'blob' }).then(function (content) {
@@ -73,33 +64,20 @@ function zip() {
 </script>
 
 <template>
-  <DxTextBox
-    v-model="inputValue"
-    mode="text"
-    styling-mode="outlined"
-    validationMessageMode="always"
-    :placeholder="placeholder"
-  >
-    <DxValidator ref="validate">
-      <DxRequiredRule message="Укажите ссылку на товар" />
-      <DxCustomRule
-        :validation-callback="validateLink"
-        message="The vacation period must not exceed 25 days"
-      />
-    </DxValidator>
-  </DxTextBox>
-  <DxButton
-    text="Начать поиск"
+  <ThePreview/>
+  <TheSearch @searchClick="getImages"/>
+  <div class="images-wrapper">
+    <img v-for="image in images" :key="image" :src="image" alt="" />
+  </div>
+  <!-- <DxButton
+    :visible="imagesBlob.length"
+    text="Сохранить архив"
     type="default"
     styling-mode="outlined"
     icon=""
     hint="Начать поиск"
-    @click="getValue"
-    :use-submit-behavior="true"
-  />
-  <div class="images-wrapper">
-    <img v-for="image in images" :key="image" :src="image" alt="" />
-  </div>
+    @click="zip"
+  /> -->
   <DxButton
     :visible="imagesBlob.length"
     text="Сохранить архив"

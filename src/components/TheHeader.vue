@@ -9,6 +9,7 @@ import { RouterLink } from 'vue-router'
     </nav>
     <div class="header-logo-wrapper">
       <img class="logo" src="../assets/logo.png" alt="WB saver" />
+      <!-- <img class="logo" src="../assets/berries-64.png" alt="WB saver" /> -->
     </div>
   </header>
 </template>
