@@ -13,6 +13,8 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@types/file-saver": "^2.0.7",
+    "@types/vue": "^2.0.0",
     "devextreme": "23.2.4",
     "devextreme-vue": "23.2.4",
     "file-saver": "^2.0.5",

@@ -2,23 +2,33 @@
 import { ref } from 'vue'
 import ThePreview from './ThePreview.vue'
 import TheSearch from './TheSearch.vue'
+import TheImages from './TheImages.vue'
 import { DxButton } from 'devextreme-vue'
+import { useImagesStore } from '@/stores/images'
+
+interface ImageItem {
+  id: number
+  src: string
+  blob: null | Blob
+}
+
+const imageStore = useImagesStore()
 
 import JSZip from 'jszip'
 import FileSaver from 'file-saver'
 
 // https://www.wildberries.ru/catalog/76091735/detail.aspx
 
-const images = ref<string[]>([])
-const imagesBlob = ref<Blob[]>([])
-
-
-
 async function getImages(url: string): Promise<void> {
   let end = false
   let counter = 1
   while (!end) {
-    await fetch(`${url}${counter}.webp`, {
+    let imageItem: ImageItem = {
+      id: Date.now(),
+      src: '',
+      blob: null
+    }
+    await fetch(`${url}${counter}.jpg`, {
       method: 'GET'
     })
       .then((res) => {
@@ -26,35 +36,26 @@ async function getImages(url: string): Promise<void> {
           end = true
           return
         }
-        console.log(res)
-        images.value.push(res.url)
+        imageItem.src = res.url
+
         return res.blob()
       })
       .then((data) => {
         if (!data) return
 
-        imagesBlob.value.push(data)
-        console.log(data)
+        imageItem.blob = data
+        imageStore.addImage(imageItem)
       })
       .catch(() => (end = true))
     counter++
   }
-  console.log(end)
 }
 
-// https://basket-05.wb.ru/vol760/part76091/76091735/images/big/2.webp
-// fetch(`https://basket-05.wb.ru/vol760/part76091/76091735/images/big/2.webp`, {
-//   method: 'GET'
-// })
-//   .then((res) => {
-//     return res.blob()
-//   })
-//   .then((data) => zip(data))
-function zip() {
+function saveZip() {
   const zip = new JSZip()
-
-  imagesBlob.value.forEach((img, i) => {
-    zip.file(`${i}.jpg`, img, { base64: true })
+  console.log(imageStore.images)
+  imageStore.images.forEach(({blob}, i) => {
+    zip.file(`${i}.jpg`, blob as Blob, { base64: true })
   })
 
   zip.generateAsync({ type: 'blob' }).then(function (content) {
@@ -64,40 +65,24 @@ function zip() {
 </script>
 
 <template>
-  <ThePreview/>
-  <TheSearch @searchClick="getImages"/>
-  <div class="images-wrapper">
-    <img v-for="image in images" :key="image" :src="image" alt="" />
-  </div>
-  <!-- <DxButton
-    :visible="imagesBlob.length"
-    text="Сохранить архив"
-    type="default"
-    styling-mode="outlined"
-    icon=""
-    hint="Начать поиск"
-    @click="zip"
-  /> -->
+  <ThePreview />
+  <TheSearch @searchClick="getImages" />
+  <TheImages />
+
   <DxButton
-    :visible="imagesBlob.length"
+    class="save-archiv-button"
+    :visible="imageStore.images.length"
     text="Сохранить архив"
-    type="default"
+    type="success"
     styling-mode="outlined"
     icon=""
     hint="Начать поиск"
-    @click="zip"
+    @click="saveZip"
   />
 </template>
 
 <style scoped lang="scss">
-.images-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-
-  & img {
-    width: 100px;
-    height: 100px;
-  }
+.save-archiv-button {
+  margin: 0 0 100px 15%;
 }
 </style>

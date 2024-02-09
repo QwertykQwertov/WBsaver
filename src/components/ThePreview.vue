@@ -18,7 +18,7 @@
 <style scoped lang="scss">
 .main-section {
   width: 100%;
-  height: 100vh;
+  height: 80vh;
 
   color: #ededed;
 
@@ -28,7 +28,7 @@
     justify-content: center;
     align-items: center;
     width: 70%;
-    height: 80%;
+    height: 90%;
     border-radius: 10px;
 
     background-image: url('../assets/Group 18.png');
